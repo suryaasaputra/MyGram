@@ -18,7 +18,7 @@ func Authentication() gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"code":    http.StatusUnauthorized,
 				"error":   "Unauthorized",
-				"message": "Log in first",
+				"message": err.Error(),
 			})
 			return
 		}

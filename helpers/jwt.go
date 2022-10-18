@@ -2,13 +2,13 @@ package helpers
 
 import (
 	"errors"
+	"mygram/config"
 	"strings"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
-
-var secretKey = []byte("secret")
 
 func GenerateToken(id int, email, username string, age int) (string, error) {
 	claims := jwt.MapClaims{
@@ -16,11 +16,12 @@ func GenerateToken(id int, email, username string, age int) (string, error) {
 		"email":     email,
 		"user_name": username,
 		"age":       age,
+		"exp":       time.Now().Add(time.Minute * 10).Unix(),
 	}
 
 	parseToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	signedToken, err := parseToken.SignedString(secretKey)
+	signedToken, err := parseToken.SignedString([]byte(config.SECRET_KEY))
 	if err != nil {
 		return "", err
 	}
@@ -42,11 +43,11 @@ func VerifyToken(ctx *gin.Context) (interface{}, error) {
 		if !ok {
 			return nil, errors.New("failed to parse token, expected jwt.SigningMethodHMAC")
 		}
-		return secretKey, nil
+		return []byte(config.SECRET_KEY), nil
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to parse token, token invalid or expired")
 	}
 
 	_, ok := token.Claims.(jwt.MapClaims)

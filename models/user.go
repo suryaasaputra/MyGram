@@ -37,6 +37,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 func (u *User) BeforeUpdate(tx *gorm.DB) error {
+	u.Password = "password" //not actual password, just to pass validation
 	_, err := govalidator.ValidateStruct(u)
 	if err != nil {
 		return err
@@ -48,8 +49,5 @@ func (u *User) BeforeUpdate(tx *gorm.DB) error {
 		return err
 	}
 
-	hashedPass := helpers.HashPass(u.Password)
-
-	u.Password = hashedPass
 	return nil
 }

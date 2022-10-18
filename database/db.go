@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"mygram/config"
 	"mygram/models"
 
 	"gorm.io/driver/postgres"
@@ -9,22 +10,17 @@ import (
 )
 
 var (
-	host     string = "localhost"
-	port     int    = 5432
-	username string = "postgres"
-	password string = "postgres"
-	dbName   string = "db_mygram"
-	db       *gorm.DB
-	err      error
+	db  *gorm.DB
+	err error
 )
 
 func StartDB() error {
-	conn := fmt.Sprintf("host=%s  user=%s password=%s dbname=%s port=%d sslmode=disable", host, username, password, dbName, port)
+	conn := fmt.Sprintf("host=%s  user=%s password=%s dbname=%s port=%d sslmode=disable", config.HOST, config.USERNAME, config.PASSWORD, config.DB_NAME, config.PORT)
 	db, err = gorm.Open(postgres.Open(conn), &gorm.Config{})
 	if err != nil {
 		return err
 	}
-	fmt.Println("Successfully Connected to Database: ", dbName)
+	fmt.Println("Successfully Connected to Database: ", config.DB_NAME)
 	db.Debug().AutoMigrate(models.User{}, models.Photo{}, models.Comment{}, models.SocialMedia{})
 	return nil
 }

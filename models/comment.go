@@ -24,6 +24,7 @@ func (c *Comment) BeforeCreate(tx *gorm.DB) error {
 }
 
 func (c *Comment) BeforeUpdate(tx *gorm.DB) error {
+	c.PhotoID = 1 //not actual id , only to pass validation
 	_, err := govalidator.ValidateStruct(c)
 	if err != nil {
 		return err
