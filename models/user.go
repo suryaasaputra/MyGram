@@ -14,9 +14,9 @@ type User struct {
 	Email        string        `gorm:"not null;uniqueIndex" json:"email" form:"email" valid:"required~Email is required,email~Invalid email address"`
 	Password     string        `gorm:"not null" json:"password" form:"password" valid:"required~Password is required,minstringlength(6)" `
 	Age          int           `gorm:"not null" json:"age" form:"age" valid:"required~Age is required"`
-	Photos       []Photo       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"photos"`
-	Comments     []Comment     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"comments"`
-	SocialMedias []SocialMedia `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"social_medias"`
+	Photos       []Photo       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"photos"`
+	Comments     []Comment     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"comments"`
+	SocialMedias []SocialMedia `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"social_medias"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
@@ -34,20 +34,5 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 	hashedPass := helpers.HashPass(u.Password)
 
 	u.Password = hashedPass
-	return nil
-}
-func (u *User) BeforeUpdate(tx *gorm.DB) error {
-	u.Password = "password" //not actual password, just to pass validation
-	_, err := govalidator.ValidateStruct(u)
-	if err != nil {
-		return err
-	}
-
-	if u.Age <= 8 {
-		err = errors.New("age must be higher than 8")
-
-		return err
-	}
-
 	return nil
 }

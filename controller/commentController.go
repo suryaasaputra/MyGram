@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"mygram/database"
 	"mygram/helpers"
 	"mygram/models"
@@ -11,23 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm/clause"
 )
-
-type comments struct {
-	models.GormModel
-	Message string ` json:"message" `
-	PhotoID int    `json:"photo_id" `
-	UserID  int    `gorm:"foreignKey" json:"user_id"`
-	Photo   photo
-	User    user
-}
-
-type photo struct {
-	ID       int    `json:"id" `
-	Title    string ` json:"title" `
-	Caption  string ` json:"caption" `
-	PhotoUrl string ` json:"photo_url" `
-	UserID   int    ` gorm:"foreignKey" json:"user_id"`
-}
 
 func PostComment(ctx *gin.Context) {
 	db := database.GetDB()
@@ -66,12 +50,11 @@ func PostComment(ctx *gin.Context) {
 }
 
 func GetComments(ctx *gin.Context) {
+	fmt.Println("ini diatas")
 	db := database.GetDB()
-
-	Comments := []comments{}
-	userData := ctx.MustGet("userData").(jwt.MapClaims)
-	userID := int(userData["id"].(float64))
-	err := db.Preload(clause.Associations).Where("user_id=?", userID).Find(&Comments).Error
+	fmt.Println("ini dibawah")
+	comments := []models.Comment{}
+	err := db.Preload(clause.Associations).Find(&comments).Error
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -81,8 +64,26 @@ func GetComments(ctx *gin.Context) {
 		})
 		return
 	}
+	commentsResponse := []models.GetAllCommentsResponse{}
 
-	ctx.JSON(http.StatusOK, Comments)
+	for _, comment := range comments {
+		response := models.GetAllCommentsResponse{}
+
+		response.GormModel = comment.GormModel
+		response.Message = comment.Message
+		response.PhotoID = comment.PhotoID
+		response.UserID = comment.UserID
+		response.Photo.ID = comment.Photo.ID
+		response.Photo.Title = comment.Photo.Title
+		response.Photo.Caption = comment.Photo.Caption
+		response.Photo.PhotoUrl = comment.Photo.PhotoUrl
+		response.User.UserName = comment.User.UserName
+		response.User.Email = comment.User.Email
+
+		commentsResponse = append(commentsResponse, response)
+	}
+
+	ctx.JSON(http.StatusOK, commentsResponse)
 }
 
 func UpdateComment(ctx *gin.Context) {

@@ -6,6 +6,7 @@ import (
 	"mygram/helpers"
 	"mygram/models"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -73,7 +74,7 @@ func LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	token, err := helpers.GenerateToken(User.ID, User.Email, User.UserName, User.Age)
+	token, err := helpers.GenerateToken(User.ID)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -127,9 +128,25 @@ func UpdateUserData(ctx *gin.Context) {
 func DeleteUserAccount(ctx *gin.Context) {
 	db := database.GetDB()
 	User := models.User{}
-	userID := ctx.Param("userId")
+	userID, err := strconv.Atoi(ctx.Param("userId"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"error":   "Bad Request",
+			"message": "Invalid user ID",
+		})
+		return
+	}
 
-	db.Delete(&User, userID)
+	err = db.Where("id=?", userID).Delete(&User).Error
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"code":    http.StatusNotFound,
+			"error":   "Not Found",
+			"message": "User not found",
+		})
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Your account has been successfully deleted",

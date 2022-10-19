@@ -13,15 +13,18 @@ type SocialMedia struct {
 	User           *User
 }
 
-func (s *SocialMedia) BeforeCreate(tx *gorm.DB) error {
-	_, err := govalidator.ValidateStruct(s)
-	if err != nil {
-		return err
+type GetAllSosmedResponse struct {
+	GormModel
+	Name           string `json:"name"`
+	SocialMediaUrl string `json:"social_media_url" `
+	UserID         int    `json:"user_id"`
+	User           struct {
+		Email    string `json:"email"`
+		UserName string `json:"user_name"`
 	}
-
-	return nil
 }
-func (s *SocialMedia) BeforeUpdate(tx *gorm.DB) error {
+
+func (s *SocialMedia) BeforeCreate(tx *gorm.DB) error {
 	_, err := govalidator.ValidateStruct(s)
 	if err != nil {
 		return err

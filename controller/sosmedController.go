@@ -12,14 +12,6 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type socialMedia struct {
-	models.GormModel
-	Name           string `json:"name"`
-	SocialMediaUrl string `json:"social_media_url" `
-	UserID         int    ` gorm:"foreignKey" json:"user_id"`
-	User           user
-}
-
 func PostSocialMedia(ctx *gin.Context) {
 	db := database.GetDB()
 
@@ -59,10 +51,8 @@ func PostSocialMedia(ctx *gin.Context) {
 func GetSocialMedias(ctx *gin.Context) {
 	db := database.GetDB()
 
-	SocialMedias := []socialMedia{}
-	userData := ctx.MustGet("userData").(jwt.MapClaims)
-	userID := int(userData["id"].(float64))
-	err := db.Preload(clause.Associations).Where("user_id=?", userID).Find(&SocialMedias).Error
+	socialMedias := []models.SocialMedia{}
+	err := db.Preload(clause.Associations).Find(&socialMedias).Error
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -72,8 +62,22 @@ func GetSocialMedias(ctx *gin.Context) {
 		})
 		return
 	}
+	socialMediasResponse := []models.GetAllSosmedResponse{}
 
-	ctx.JSON(http.StatusOK, SocialMedias)
+	for _, socialMedia := range socialMedias {
+		response := models.GetAllSosmedResponse{}
+
+		response.GormModel = socialMedia.GormModel
+		response.Name = socialMedia.Name
+		response.SocialMediaUrl = socialMedia.SocialMediaUrl
+		response.UserID = socialMedia.UserID
+		response.User.UserName = socialMedia.User.UserName
+		response.User.Email = socialMedia.User.Email
+
+		socialMediasResponse = append(socialMediasResponse, response)
+	}
+
+	ctx.JSON(http.StatusOK, socialMediasResponse)
 }
 
 func UpdateSocialMedia(ctx *gin.Context) {

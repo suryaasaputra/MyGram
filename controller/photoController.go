@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"mygram/database"
 	"mygram/helpers"
 	"mygram/models"
@@ -12,29 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm/clause"
 )
-
-type photos struct {
-	models.GormModel
-	Title    string    ` json:"title" `
-	Caption  string    ` json:"caption" `
-	PhotoUrl string    ` json:"photo_url" `
-	UserID   int       ` gorm:"foreignKey" json:"user_id"`
-	User     user      `json:"user"`
-	Comments []comment `gorm:"foreignKey:PhotoID"`
-}
-
-type user struct {
-	ID       int    ` json:"id"`
-	Email    string ` json:"email"`
-	UserName string ` json:"user_name" `
-}
-
-type comment struct {
-	models.GormModel
-	Message string ` json:"message" `
-	PhotoID int    ` gorm:"foreignKey" json:"photo_id"`
-	UserID  int    ` gorm:"foreignKey" json:"user_id" `
-}
 
 func PostPhoto(ctx *gin.Context) {
 	db := database.GetDB()
@@ -76,11 +52,8 @@ func PostPhoto(ctx *gin.Context) {
 func GetPhotos(ctx *gin.Context) {
 	db := database.GetDB()
 
-	photos := []photos{}
-	userData := ctx.MustGet("userData").(jwt.MapClaims)
-	userID := int(userData["id"].(float64))
-	fmt.Println(userID)
-	err := db.Preload(clause.Associations).Where("user_id=?", userID).Find(&photos).Error
+	photos := []models.Photo{}
+	err := db.Preload(clause.Associations).Find(&photos).Error
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -91,7 +64,22 @@ func GetPhotos(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, photos)
+	photosResponse := []models.GetAllPhotosResponse{}
+	for _, photo := range photos {
+		response := models.GetAllPhotosResponse{}
+		response.ID = photo.ID
+		response.CreatedAt = photo.CreatedAt
+		response.UpdatedAt = photo.UpdatedAt
+		response.Title = photo.Title
+		response.Caption = photo.Caption
+		response.PhotoUrl = photo.PhotoUrl
+		response.UserID = photo.UserID
+		response.User.Email = photo.User.Email
+		response.User.UserName = photo.User.UserName
+
+		photosResponse = append(photosResponse, response)
+	}
+	ctx.JSON(http.StatusOK, photosResponse)
 }
 
 func UpdatePhoto(ctx *gin.Context) {

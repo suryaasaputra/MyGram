@@ -4,19 +4,15 @@ import (
 	"errors"
 	"mygram/config"
 	"strings"
-	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-func GenerateToken(id int, email, username string, age int) (string, error) {
+func GenerateToken(id int) (string, error) {
 	claims := jwt.MapClaims{
-		"id":        id,
-		"email":     email,
-		"user_name": username,
-		"age":       age,
-		"exp":       time.Now().Add(time.Minute * 10).Unix(),
+		"id": id,
+		// "exp": time.Now().Add(time.Minute * 30).Unix(),
 	}
 
 	parseToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -52,7 +48,7 @@ func VerifyToken(ctx *gin.Context) (interface{}, error) {
 
 	_, ok := token.Claims.(jwt.MapClaims)
 
-	if !ok && !token.Valid {
+	if !ok || !token.Valid {
 		return nil, errors.New("failed to claims or token not valid")
 	}
 
