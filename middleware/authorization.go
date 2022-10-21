@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"mygram/database"
+	"mygram/models"
 	"net/http"
 	"strconv"
 
@@ -23,14 +25,88 @@ func Authorization(param string) gin.HandlerFunc {
 		userData := ctx.MustGet("userData").(jwt.MapClaims)
 		userID := int(userData["id"].(float64))
 
-		if userID != id {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"code":    http.StatusUnauthorized,
-				"error":   "Unauthorized",
-				"message": "You are not allowed to access this data",
-			})
-			return
+		if param == "photoId" {
+			db := database.GetDB()
+			photo := models.Photo{}
+
+			err := db.Select("user_id").First(&photo, id).Error
+
+			if err != nil {
+				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+					"code":    http.StatusNotFound,
+					"error":   "Not Found",
+					"message": "Data doesn't exist",
+				})
+				return
+			}
+
+			if userID != photo.UserID {
+				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+					"code":    http.StatusUnauthorized,
+					"error":   "Unauthorized",
+					"message": "You are not allowed to access this data",
+				})
+				return
+			}
+
+		} else if param == "commentId" {
+			db := database.GetDB()
+			comment := models.Comment{}
+
+			err := db.Select("user_id").First(&comment, id).Error
+
+			if err != nil {
+				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+					"code":    http.StatusNotFound,
+					"error":   "Not Found",
+					"message": "Data doesn't exist",
+				})
+				return
+			}
+
+			if userID != comment.UserID {
+				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+					"code":    http.StatusUnauthorized,
+					"error":   "Unauthorized",
+					"message": "You are not allowed to access this data",
+				})
+				return
+			}
+		} else if param == "socialMediaId" {
+			db := database.GetDB()
+			sosmed := models.SocialMedia{}
+
+			err := db.Select("user_id").First(&sosmed, id).Error
+
+			if err != nil {
+				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+					"code":    http.StatusNotFound,
+					"error":   "Not Found",
+					"message": "Data doesn't exist",
+				})
+				return
+			}
+
+			if userID != sosmed.UserID {
+				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+					"code":    http.StatusUnauthorized,
+					"error":   "Unauthorized",
+					"message": "You are not allowed to access this data",
+				})
+				return
+			}
+
+		} else {
+			if userID != id {
+				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+					"code":    http.StatusUnauthorized,
+					"error":   "Unauthorized",
+					"message": "You are not allowed to access this data",
+				})
+				return
+			}
 		}
+
 		ctx.Next()
 	}
 }
