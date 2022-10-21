@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"mygram/config"
 	"mygram/database"
 	"mygram/router"
 )
@@ -13,5 +14,5 @@ func main() {
 		fmt.Println("Error starting database: ", err)
 		return
 	}
-	r.Run(":8080")
+	r.Run(config.SERVER_PORT)
 }
