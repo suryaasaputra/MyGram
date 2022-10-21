@@ -2,6 +2,14 @@ package helpers
 
 import "github.com/gin-gonic/gin"
 
-func GetContentType(c *gin.Context) string {
-	return c.Request.Header.Get("Content-Type")
+type RequestHeader struct {
+	ContentType   string
+	Authorization string
+}
+
+func GetRequestHeaders(c *gin.Context) RequestHeader {
+	return RequestHeader{
+		ContentType:   c.Request.Header.Get("Content-Type"),
+		Authorization: c.Request.Header.Get("Authorization"),
+	}
 }

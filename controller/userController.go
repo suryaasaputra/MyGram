@@ -15,8 +15,8 @@ func RegisterUser(ctx *gin.Context) {
 	db := database.GetDB()
 	User := models.User{}
 
-	contentType := helpers.GetContentType(ctx)
-	if contentType == "application/json" {
+	reqHeaders := helpers.GetRequestHeaders(ctx)
+	if reqHeaders.ContentType == "application/json" {
 		ctx.ShouldBindJSON(&User)
 	} else {
 		ctx.ShouldBind(&User)
@@ -45,8 +45,8 @@ func LoginUser(ctx *gin.Context) {
 	db := database.GetDB()
 	User := models.User{}
 
-	contentType := helpers.GetContentType(ctx)
-	if contentType == "application/json" {
+	reqHeaders := helpers.GetRequestHeaders(ctx)
+	if reqHeaders.ContentType == "application/json" {
 		ctx.ShouldBindJSON(&User)
 	} else {
 		ctx.ShouldBind(&User)
@@ -94,8 +94,8 @@ func UpdateUserData(ctx *gin.Context) {
 	id := ctx.Param("userId")
 	User := models.User{}
 
-	contentType := helpers.GetContentType(ctx)
-	if contentType == "application/json" {
+	reqHeaders := helpers.GetRequestHeaders(ctx)
+	if reqHeaders.ContentType == "application/json" {
 		ctx.ShouldBindJSON(&User)
 	} else {
 		ctx.ShouldBind(&User)

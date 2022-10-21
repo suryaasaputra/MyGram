@@ -19,8 +19,8 @@ func PostSocialMedia(ctx *gin.Context) {
 	userData := ctx.MustGet("userData").(jwt.MapClaims)
 	userID := int(userData["id"].(float64))
 
-	contentType := helpers.GetContentType(ctx)
-	if contentType == "application/json" {
+	reqHeaders := helpers.GetRequestHeaders(ctx)
+	if reqHeaders.ContentType == "application/json" {
 		ctx.ShouldBindJSON(&SocialMedia)
 	} else {
 		ctx.ShouldBind(&SocialMedia)
@@ -96,8 +96,8 @@ func UpdateSocialMedia(ctx *gin.Context) {
 		return
 	}
 
-	contentType := helpers.GetContentType(ctx)
-	if contentType == "application/json" {
+	reqHeaders := helpers.GetRequestHeaders(ctx)
+	if reqHeaders.ContentType == "application/json" {
 		ctx.ShouldBindJSON(&SocialMedia)
 	} else {
 		ctx.ShouldBind(&SocialMedia)

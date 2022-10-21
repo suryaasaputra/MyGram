@@ -26,7 +26,7 @@ func GenerateToken(id int) (string, error) {
 }
 
 func VerifyToken(ctx *gin.Context) (interface{}, error) {
-	headerToken := ctx.Request.Header.Get("Authorization")
+	headerToken := GetRequestHeaders(ctx).Authorization
 	haveBearer := strings.HasPrefix(headerToken, "Bearer")
 	if !haveBearer {
 		return nil, errors.New("no bearer in request header for authorization")
